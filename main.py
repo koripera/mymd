@@ -7,10 +7,12 @@ mdファイルをhtmlファイルに変換して、flaskでの閲覧をさせる
 """
 import os
 import glob
+import re
+import platform
 
 from flask import Flask, send_file, Response, abort
 import markdown
-import re
+from waitress import serve
 
 app = Flask(__name__)
 
@@ -126,4 +128,9 @@ def output(path):#指定URLの.mdﾌｧｲﾙをhtml化,加工して返す
 
 
 if __name__=="__main__":
-	app.run(debug=True)
+	os_name = platform.system()
+	if os_name == "Windows":os.system('cls')
+	else                   :os.system('clear')
+	print("http://localhost:5000")
+	serve(app,port=5000)
+	#app.run(debug=True)
