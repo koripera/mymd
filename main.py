@@ -95,16 +95,19 @@ def fold(html):#<h2></h2>の要素を折りたたみたい
 @app.route("/")
 def index():
 	a=""
+
+	for name in glob.iglob("mdfile/**/*.md",recursive=True):
+		a += f"<a href='{name[7:][:-3]}' target='_blank'>{name[7:]}</a><br>\n"
 	
 	#.mdﾌｧｲﾙへのﾘﾝｸを作成する	
-	for name in glob.iglob("mdfile/**/*.md",recursive=True):
-		a+=f"[{name[7:]}]({name[7:][:-3]})  \n"
+	#for name in glob.iglob("mdfile/**/*.md",recursive=True):
+	#	a+=f"[{name[7:]}]({name[7:][:-3]})  \n"
 
 	#ﾊﾟｰｻｰの作成とhtmlの組み立て
-	md = markdown.Markdown(extensions=["fenced_code"])
-	md_template = cssstyle+ md.convert(a)
+	#md = markdown.Markdown(extensions=["fenced_code"])
+	#md_template = cssstyle+ md.convert(a)
 
-	return md_template
+	return a
 		
 
 @app.route("/<path:path>")
@@ -131,6 +134,7 @@ if __name__=="__main__":
 	os_name = platform.system()
 	if os_name == "Windows":os.system('cls')
 	else                   :os.system('clear')
+	print("mymd")
 	print("http://localhost:5000")
 	serve(app,port=5000)
 	#app.run(debug=True)
