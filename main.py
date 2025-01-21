@@ -1,119 +1,42 @@
-#https://python-markdown.github.io/
-#https://dev.to/mrprofessor/rendering-markdown-from-flask-1l41
-
 """
 mdファイルをhtmlファイルに変換して、flaskでの閲覧をさせる
-
 """
+
 import os
 import glob
 import re
 import platform
 
-from flask import Flask, send_file, Response, abort
+from flask import Flask, send_file, Response, abort,render_template
 import markdown
 from waitress import serve
 
 
 
-cssstyle=("""\
-<style>
-pre{
-background-color: #eee;
-padding-left: 20px;
-padding-top: 20px;
-padding-bottom: 20px;
-}
+def main():
+	Template.dir_register("static/css")
+	temp_register()
 
-code {
-background-color: #eee;
-border-radius: 3px;
-}
+	app = Flask(__name__)
+	app_routing(app)
+	
+	os_name = platform.system()
+	if os_name == "Windows":os.system('cls')
+	else                   :os.system('clear')
+	print("mymd")
+	print("http://localhost:5000")
+	#serve(app,port=5000)
+	app.run(debug=True)
 
-summary {
-cursor: pointer;
-display: flex;
-align-items: center;
-list-style: none;
-}
+def app_routing(app):
+	app.add_url_rule("/",view_func=index)
+	app.add_url_rule("/<path:path>",view_func=output)
 
-summary:before {
-	content: '▶'; /* カスタムアイコンを追加 */
-	margin-right: 0.5em;
-	display: inline-block;
-	transform: rotate(0);
-	transition: transform 0.3s ease;
-}
+def index():
+	print(Template.names())
+	css = f"<style>\n{Template('index').nomal()}</style>\n"
+	return css + dir_linklist("mdfile")
 
-summary h2 {
-	margin: 0; /* 不要な余白を削除 */
-	font-size: 1.25em; /* 必要に応じて調整 */
-	font-weight: bold;
-}
-
-summary::-webkit-details-marker {
-	display: none; /* デフォルトの矢印アイコンを非表示にする */
-}
-
-details[open] summary:before {
-	transform: rotate(90deg); /* アイコンを回転させて開閉を表現 */
-}
-
-details {
-	margin-bottom: 1em;
-	border: 1px solid #ccc;
-	border-radius: 5px;
-	padding: 0.5em;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-</style>
-
-""")
-
-indexcss=("""\
-<style>
-details > summary {
-  list-style: none;
-}
-ul {
-    list-style-type: none;
-}
-ul {
-  box-shadow :0px 0px 3px silver;
-  border: solid 1px whitesmoke;
-  padding: 0.5em 1em 0.5em 2.3em;
-  position: relative;
-  background: #fafafa;
-}
-
-ul li {
-  line-height: 1.5;
-  padding: 0.5em 0;
-  list-style-type: none!important;
-}
-
-ul li:before {
-  font-family: "Font Awesome 5 Free";
-  content: "\f0da";
-  position: absolute;
-  left : 1em; /*左端からのアイコンまで*/
-  color: gray; /*アイコン色*/
-}
-</style>
-""")
-
-
-app = Flask(__name__)
-
-
-@app.route("/")
-def index(): 
-	return indexcss+dir_linklist("mdfile")
-
-
-
-@app.route("/<path:path>")
 def output(path):#指定URLの.mdﾌｧｲﾙをhtml化,加工して返す
 
 	filepath=f"mdfile/{path}.md"
@@ -128,9 +51,11 @@ def output(path):#指定URLの.mdﾌｧｲﾙをhtml化,加工して返す
 
 	#ﾊﾟｰｻｰの作成とhtmlの組み立て
 	md = markdown.Markdown(extensions=["fenced_code"])
-	md_template = cssstyle+ md.convert(a)
+	md_template = md.convert(a)
 
-	return fold(md_template)
+	css = f"<style>\n{Template('mdfile').nomal()}</style>\n"
+
+	return css + fold(md_template)
 
 
 
@@ -198,12 +123,28 @@ class Template:
 			print(e)
 			raise ValueError(f"Missing placeholder: {e.args[0]}") from None
 
+	def nomal(self):
+		return Template.templates[self.name]
+
 	@classmethod
 	def register(cls, name, template):
 		cls.templates[name] = template
 
 	@classmethod
-	def list_templates(cls):
+	def dir_register(cls, directory):
+		from glob import iglob
+		for path in iglob(f"{directory}/*"):
+			name = os.path.splitext(os.path.basename(path))[0]
+			with open(path,"r",encoding="utf-8") as f:
+				template = f.read()
+
+			cls.register(
+				name     = name,
+				template = template
+			)
+
+	@classmethod
+	def names(cls):
 		return list(cls.templates.keys())
 		
 def temp_register():
@@ -286,13 +227,6 @@ def fold(html):#<h2></h2>の要素を折りたたみたい
 
 
 if __name__=="__main__":
-	temp_register()
-	os_name = platform.system()
-	if os_name == "Windows":os.system('cls')
-	else                   :os.system('clear')
-	print("mymd")
-	print("http://localhost:5000")
-	#serve(app,port=5000)
-	app.run(debug=True)
+	main()
 
 
