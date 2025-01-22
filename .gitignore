@@ -4,5 +4,4 @@
 #
 mdfile/.git/
 mdfile/*.md
-mdfile/.gitignore
 !mdfile/.gitkeep
