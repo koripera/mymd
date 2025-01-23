@@ -11,10 +11,11 @@ from flask import Flask, send_file, Response, abort,render_template
 import markdown
 from waitress import serve
 
-
+from template import Template
 
 def main():
-	Template.dir_register("static/css")
+	Template.add_dir("templates/mytemplate")
+	Template.add_dir("static/css")
 	temp_register()
 
 	app = Flask(__name__)
@@ -34,8 +35,13 @@ def app_routing(app):
 
 def index():
 	print(Template.names())
-	css = f"<style>\n{Template('index').nomal()}</style>\n"
-	return css + dir_linklist("mdfile")
+	
+	res = Template("html")(
+		head = f"<style>\n{Template('index').raw()}</style>\n",
+		body = dir_linklist("mdfile"),
+	)
+
+	return res
 
 def output(path):#指定URLの.mdﾌｧｲﾙをhtml化,加工して返す
 
@@ -53,12 +59,41 @@ def output(path):#指定URLの.mdﾌｧｲﾙをhtml化,加工して返す
 	md = markdown.Markdown(extensions=["fenced_code"])
 	md_template = md.convert(a)
 
-	css = f"<style>\n{Template('mdfile').nomal()}</style>\n"
+	css = f"<style>\n{Template('mdfile').raw()}</style>\n"
 
 	return css + fold(md_template)
 
 
+def temp_register():
 
+	Template.add("link",ttxt(
+	"""
+	<a href='{link}' target='_blank'>{display}</a>
+	"""
+	))
+
+	Template.add("lilink",ttxt(
+	"""
+	<li><a href='{link}' target='_blank'>{display}</a></li>
+	"""
+	))
+
+	Template.add("ul",ttxt(
+	"""
+	<ul>
+	{content}
+	</ul>
+	"""
+	))
+
+	Template.add("fold",ttxt(
+	"""
+	<details open>
+	<summary>{name}</summary>
+	{content}
+	</details>
+	"""
+	))
 
 
 
@@ -104,82 +139,6 @@ def dir_linklist(basepath,followdir=""):
 		a+= f"<li>{foldcontent}</li>"
 
 	return ul(content=a.strip())
-
-
-
-class Template:
-	templates = {}
-
-	def __init__(self,name):
-		if name in Template.templates:
-			self.name = name
-		else:
-			raise ValueError(f"Template '{name}' does not exist")
-
-	def __call__(self,**kwargs):
-		try:
-			return Template.templates[self.name].format(**kwargs)
-		except KeyError as e:
-			print(e)
-			raise ValueError(f"Missing placeholder: {e.args[0]}") from None
-
-	def nomal(self):
-		return Template.templates[self.name]
-
-	@classmethod
-	def register(cls, name, template):
-		cls.templates[name] = template
-
-	@classmethod
-	def dir_register(cls, directory):
-		from glob import iglob
-		for path in iglob(f"{directory}/*"):
-			name = os.path.splitext(os.path.basename(path))[0]
-			with open(path,"r",encoding="utf-8") as f:
-				template = f.read()
-
-			cls.register(
-				name     = name,
-				template = template
-			)
-
-	@classmethod
-	def names(cls):
-		return list(cls.templates.keys())
-		
-def temp_register():
-
-	Template.register("link",ttxt(
-	"""
-	<a href='{link}' target='_blank'>{display}</a>
-	"""
-	))
-
-	Template.register("lilink",ttxt(
-	"""
-	<li><a href='{link}' target='_blank'>{display}</a></li>
-	"""
-	))
-
-	Template.register("ul",ttxt(
-	"""
-	<ul>
-	{content}
-	</ul>
-	"""
-	))
-
-	Template.register("fold",ttxt(
-	"""
-	<details open>
-	<summary>{name}</summary>
-	{content}
-	</details>
-	"""
-	))
-
-
-
 
 
 def fold(html):#<h2></h2>の要素を折りたたみたい

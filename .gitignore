@@ -1,5 +1,6 @@
 #exclude .venv
 .venv/
+__pycache__/
 
 #
 mdfile/
