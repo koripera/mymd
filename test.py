@@ -1,11 +1,12 @@
 from template2 import Template
 
-#Template.add_dir("templates/mytemplate")
+Template.add_dir("templates/mytemplate")
 
 #a = Template["html"]
-a = Template("aaa{}uuu{}")("00","01","02")
+#a = Template("aaa{}uuu{}")("00","01")
+#b = Template("{aaa}{iii}")(aaa="aiueo")
+#Template.add("aaa","{aaa}{iii}")
 
-b = "{}{}{}"
-print(b.format("a","b","c"))
+print(Template["html"](body="aiueo"))
 
-print(a)
+
