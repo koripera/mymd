@@ -31,10 +31,10 @@ class Template(metaclass = meta_template):
 
 		#placeholderの名前を取得しておく
 		front,rear = self.blankets
-		pattern = re.compile(f"{front}(.*?){rear}")
+		pattern = re.compile(f"{front}(?<name>.*?){rear}")
 
 		for match in re.finditer(pattern,self.template):
-			self.placenames.add( match.groups()[0] )
+			self.placenames.add( match.groups("name") )
 
 	def __call__(self,*args,**kwargs):
 		#対象がないものはｴﾗｰ	
