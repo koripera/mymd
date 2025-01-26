@@ -7,16 +7,24 @@ import glob
 import re
 import platform
 
-from flask import Flask, send_file, Response, abort,render_template
+from flask import (
+	Flask,
+	send_file,
+	Response,
+	abort,
+	render_template,
+	url_for,
+)
+
 import markdown
 from waitress import serve
 
 from template import Template
+from converter import Converter
 
 def main():
 	Template.add_dir("templates/mytemplate")
 	Template.add_dir("static/css")
-	temp_register()
 
 	app = Flask(__name__)
 	app_routing(app)
@@ -35,13 +43,18 @@ def app_routing(app):
 
 def index():
 	print(Template.names())
+
+	tab1 = Converter["tab"]()
+
+	head = (
+	f"""<link rel="stylesheet" href="{url_for('static', filename='css/index.css')}">"""
+	)
 	
-	res = Template("html")(
-		head = f"<style>\n{Template('index').raw()}</style>\n",
-		body = dir_linklist("mdfile"),
+	return Template["html"](
+		head = tab1(head),
+		body = tab1(dir_linklist("mdfile")),
 	)
 
-	return res
 
 def output(path):#指定URLの.mdﾌｧｲﾙをhtml化,加工して返す
 
@@ -59,43 +72,15 @@ def output(path):#指定URLの.mdﾌｧｲﾙをhtml化,加工して返す
 	md = markdown.Markdown(extensions=["fenced_code"])
 	md_template = md.convert(a)
 
-	css = f"<style>\n{Template('mdfile').raw()}</style>\n"
+	css = f"""<link rel="stylesheet" href="{url_for('static', filename='css/mdfile.css')}">"""
 
-	return css + fold(md_template)
+	tab = Converter["tab"]()
 
-
-def temp_register():
-
-	Template.add("link",ttxt(
-	"""
-	<a href='{link}' target='_blank'>{display}</a>
-	"""
-	))
-
-	Template.add("lilink",ttxt(
-	"""
-	<li><a href='{link}' target='_blank'>{display}</a></li>
-	"""
-	))
-
-	Template.add("ul",ttxt(
-	"""
-	<ul>
-	{content}
-	</ul>
-	"""
-	))
-
-	Template.add("fold",ttxt(
-	"""
-	<details open>
-	<summary>{name}</summary>
-	{content}
-	</details>
-	"""
-	))
-
-
+	return Template["html"](
+		title = None,
+		head  = tab(css),
+		body  = fold(md_template),
+	)
 
 
 
@@ -110,35 +95,37 @@ def ttxt(txt):
 
 def dir_linklist(basepath,followdir=""):
 
-	lilink = Template("lilink")
-	ul     = Template("ul")
-	fold   = Template("fold")
+	li     = Template["li"]
+	link   = Template["link"]
+	ul     = Template["ul"]
+	fold   = Template["fold"]
+	tab1   = Converter["tab"]()
 
 	a = ""
 
 	#ﾃﾞｨﾚｸﾄﾘに直接含まれるものを取得
-	for path in glob.iglob(f"{followdir}*.md",root_dir=basepath):
+	for path in sorted(glob.glob(f"{followdir}*.md",root_dir=basepath)):
 		#followdir/aaa.md → aaa
 		name     = os.path.splitext(os.path.basename(path))[0]
 
 		#followdir/aaa.md → followdir/aaa
 		linkpath = os.path.splitext(path)[0]	
 
-		a+=lilink(
+		a+=li(link(
 			link    = linkpath,
 			display = name,
-		)
+		))+"\n"
 
 	#ﾃﾞｨﾚｸﾄﾘを取得
-	for path in glob.iglob(f"{followdir}*/",root_dir=basepath): 
+	for path in sorted(glob.glob(f"{followdir}*/",root_dir=basepath)): 
 		foldcontent = fold(
 			name = os.path.basename(os.path.normpath(path)),
-			content = dir_linklist(basepath,followdir=path),
+			content = tab1(dir_linklist(basepath,followdir=path)),
 		)
 
-		a+= f"<li>{foldcontent}</li>"
+		a+= f"<li>{foldcontent}</li>\n"
 
-	return ul(content=a.strip())
+	return ul(content=tab1(a.strip()))
 
 
 def fold(html):#<h2></h2>の要素を折りたたみたい
