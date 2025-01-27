@@ -49,7 +49,7 @@ class Template(metaclass = meta_template):
 		#名前無しを置き換え
 		for val in args:
 			pattern = re.compile(f"{front}{rear}")
-			res = re.sub(pattern,val,res,1)
+			res = re.sub(pattern,lambda _ :val,res,1)
 
 		#余りを空白に
 		pattern = re.compile(f"{front}{rear}")
@@ -59,7 +59,7 @@ class Template(metaclass = meta_template):
 		for name,val  in kwargs.items():
 			val = val if val != None else ""
 			pattern = re.compile(f"{front}{name}{rear}")
-			res = re.sub(pattern,val,res)
+			res = re.sub(pattern,lambda _:val,res)
 	
 
 		#未使用ﾌﾟﾚｰｽﾎﾙﾀﾞを空白にする
