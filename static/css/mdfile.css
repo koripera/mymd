@@ -46,3 +46,13 @@ details {
 	padding: 0.5em;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
+
+th,td {
+    border: solid 1px;              /* 枠線指定 */
+	padding: 10px;      /* 余白指定 */
+}
+
+table {
+    border-collapse:  collapse;     /* セルの線を重ねる */
+	font-size: 75%;
+}
