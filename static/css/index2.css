@@ -1,0 +1,39 @@
+a,
+summary {
+display: block;
+padding: 2px;
+padding-left:15px;
+border-radius: 10px;
+text-decoration: none;
+font-weight: bold; 
+color: darkblue;
+outline: none;
+user-select:none;
+}
+
+ul{
+list-style-type: none;
+padding-left:20px;	
+}
+
+ul.root {
+padding-left:0px;	
+}
+
+li{
+margin-top:0px;
+margin-bottom:0px;
+}
+
+details[open] > summary {
+	color:darkblue;
+	background-color:lightcyan; 
+}
+
+a:hover,
+a:focus-visible,
+details > summary:hover,
+details > summary:focus-visible{
+    background-color: darkblue;
+    color: white;
+}

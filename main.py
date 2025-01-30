@@ -47,7 +47,7 @@ def index():
 	tab1 = Converter["tab"]()
 
 	head = (
-	f"""<link rel="stylesheet" href="{url_for('static', filename='css/index.css')}">"""
+	f"""<link rel="stylesheet" href="{url_for('static', filename='css/index2.css')}">"""
 	)
 	
 	return Template["html"](
