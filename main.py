@@ -125,7 +125,10 @@ def dir_linklist(basepath,followdir=""):
 
 		a+= f"<li>{foldcontent}</li>\n"
 
-	return ul(content=tab1(a.strip()))
+	if followdir=="":
+		return f"<ul class='root'>\n{tab1(a.strip())}\n</ul>\n"
+	else:
+		return ul(content=tab1(a.strip()))
 
 
 def fold(html):#<h2></h2>の要素を折りたたみたい
