@@ -17,6 +17,12 @@ class Converter(metaclass = meta):
 	#関数を返す関数を登録
 	items = {}
 
+	@classmethod	
+	def add(cls,func):
+		#print("aaa")
+		cls.items[func.__name__]=func
+
+@Converter.add
 def tab(level=1):
 	def func(txt):
 		lines = txt.split("\n")
@@ -24,5 +30,4 @@ def tab(level=1):
 		
 	return func
 
-Converter.items["tab"] = tab
 
