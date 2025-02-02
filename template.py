@@ -33,15 +33,30 @@ class Template(metaclass = meta_template):
 			self.placenames.add( match.group("name") )
 
 	def __call__(self,*args,**kwargs):
-		#対象がないものはｴﾗｰ	
-		not_register = set(kwargs.keys()) - self.placenames
-		if not_register:
+		#placeholderを置き換え、placeholderの無い文字列を返す
+		res = self._replace(*args,**kwargs)
+		res = self._del_holder(res)
+		return res
+
+	def _replace(self,*args,**kwargs):
+		#引数から、文字列の置き換えを行う
+
+		#対象がないｷｰﾜｰﾄﾞ指定はｴﾗｰ	
+		if (not_register := set(kwargs.keys()) - self.placenames):
 			raise KeyError(f"not register:{not_register}")
 
-			
 		res = self.template
 		front,rear = self.blankets
 
+		blank_holder_num = len(re.findall(f"{front}{rear}",res))
+
+		#空白のplaceholderが無く、キーワードが一つだけならargsでも対応する
+		if blank_holder_num==0 and len(self.placenames)==1 and len(args)==1 and len(kwargs)==0:
+			name = self.placenames.pop()
+			pattern = re.compile(f"{front}{name}{rear}")
+			res = re.sub(pattern,lambda _:args[0],res)
+			return res
+			
 		#引数が収まらないときはｴﾗｰ
 		if len(re.findall(f"{front}{rear}",res)) < len(args):
 			raise TypeError("Too many arguments")
@@ -51,25 +66,27 @@ class Template(metaclass = meta_template):
 			pattern = re.compile(f"{front}{rear}")
 			res = re.sub(pattern,lambda _ :val,res,1)
 
-		#余りを空白に
-		pattern = re.compile(f"{front}{rear}")
-		res = re.sub(pattern,"",res) 
-
 		#名前付きプレースホルダを置き換えていく
 		for name,val  in kwargs.items():
 			val = val if val != None else ""
 			pattern = re.compile(f"{front}{name}{rear}")
 			res = re.sub(pattern,lambda _:val,res)
-	
-
-		#未使用ﾌﾟﾚｰｽﾎﾙﾀﾞを空白にする
-		for name in self.placenames-set(kwargs.keys()):
-			pattern = re.compile(f"{front}{name}{rear}")
-			res = re.sub(pattern,"",res)
-		
-			 
 
 		return res
+
+	def _del_holder(self,txt):
+		#placeholderを空白に
+		front,rear = self.blankets
+		pattern = re.compile(f"{front}.*?{rear}")
+		txt = re.sub(pattern,"",txt)
+		return txt
+
+	def prefill(self,*args,**kwargs):
+		#Templateから、一部を埋めたTemplateを作る
+		return Template(
+			self._replace(*args,**kwargs),
+			blankets = self.blankets,
+		)
 
 	@classmethod
 	def add(cls, name, template ,blankets=None):
