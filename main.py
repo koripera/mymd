@@ -35,7 +35,7 @@ def main():
 	print("mymd")
 	print("http://localhost:5000")
 	#serve(app,port=5000)
-	app.run(debug=True)
+	app.run(port=5001,debug=True)
 
 def app_routing(app):
 	app.add_url_rule("/",view_func=index)
@@ -69,7 +69,7 @@ def output(path):#指定URLの.mdﾌｧｲﾙをhtml化,加工して返す
 		a = f.read()
 
 	#ﾊﾟｰｻｰの作成とhtmlの組み立て
-	md = markdown.Markdown(extensions=["fenced_code"])
+	md = markdown.Markdown(extensions=["fenced_code","tables"])
 	md_template = md.convert(a)
 
 	css = f"""<link rel="stylesheet" href="{url_for('static', filename='css/mdfile.css')}">"""

@@ -35,7 +35,7 @@ class Template(metaclass = meta_template):
 	def __call__(self,*args,**kwargs):
 		#placeholderを置き換え、placeholderの無い文字列を返す
 		res = self._replace(*args,**kwargs)
-		res = self._del_holder(res)
+		#res = self._del_holder(res)
 		return res
 
 	def _replace(self,*args,**kwargs):
